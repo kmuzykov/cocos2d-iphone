@@ -512,34 +512,30 @@ const NSUInteger defaultCapacity = 0;
 // addChild helper, faster than insertChild
 -(void) appendChild:(CCSprite*)sprite
 {
-    BOOL isSprite = [sprite isKindOfClass:[CCSprite class]];
-    BOOL isNode = !isSprite && [sprite isMemberOfClass:[CCNode class]];
-    
-    if (!isSprite && !isNode)
-        return;
-    
-    if (isSprite)
-    {
-        [sprite setBatchNode:self];
-        [sprite setDirty: YES];
-        
-        if(_textureAtlas.totalQuads == _textureAtlas.capacity)
-            [self increaseAtlasCapacity];
-        
-        [_descendants addObject:sprite];
-        
-        NSUInteger index=_descendants.count-1;
-        
-        sprite.atlasIndex=index;
-        
-        ccV3F_C4B_T2F_Quad quad = [sprite quad];
-        [_textureAtlas insertQuad:&quad atIndex:index];
-    }
-    
-    _isReorderChildDirty=YES;
-    
+    //adding child sprites of the sprite or CCNode,
+    //since if they're using same spritesheet it is totally ok.
     for(CCSprite* child in sprite.children)
         [self appendChild:child];
+    
+    //Furhter code works only for actual sprites.
+    if(![sprite isKindOfClass:[CCSprite class]])
+        return;
+    
+    _isReorderChildDirty=YES;
+    [sprite setBatchNode:self];
+    [sprite setDirty: YES];
+    
+    if(_textureAtlas.totalQuads == _textureAtlas.capacity)
+        [self increaseAtlasCapacity];
+    
+    [_descendants addObject:sprite];
+    
+    NSUInteger index=_descendants.count-1;
+    
+    sprite.atlasIndex=index;
+    
+    ccV3F_C4B_T2F_Quad quad = [sprite quad];
+    [_textureAtlas insertQuad:&quad atIndex:index];
 }
 
 
